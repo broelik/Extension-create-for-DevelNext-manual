@@ -41,7 +41,7 @@ public class TestExtension extends Extension
 }
 ```
 
-Разберём код подробней. Сначала идёт название нашего пакета. Затем следует объевления главного класса нашего расширения который наследуется от Extension. Далее идут методы **getStatus**, который возвращает статус разработки расширения и **onRegister**, который компилятор вызовет при подключении расширения к проекту.
+Разберём код подробней. Сначала идёт название нашего пакета. Затем следует объявление главного класса нашего расширения который наследуется от **Extension**. Далее идут методы **getStatus**, который возвращает статус разработки расширения и **onRegister**, который компилятор вызовет при подключении расширения к проекту.
 Пока наше расширение не добавляет ни одного класса, но это немного позже. Нам нужно сделать так, чтобы компилятор понимал, какой класс использовать для получения необходимой информации о расширении. Для этого мы создадим в корневой папке нашего проекта, файл **META-INF/services/php.runtime.ext.support.Extension** и пропишем в нём полный путь до нашего класса, в моём случае это - **org.develnext.jphp.ext.testextension.TestExtension**.
 ## Создание классов
 На данный момент, наше расширение уже можно использовать, но в нём нет ни одного класса! Нужно это исправить.
@@ -74,44 +74,75 @@ public class TestObject extends BaseObject
 **test\TestObject**
 ## Наполняем класс методами
 На данный момент, наш класс не имеет ни одного метода и даже конструктора.
-Для создания, так называемых, сигнатурных методов нужно использовать аннотация **@Signature**:
+Для создания, так называемых, сигнатурных методов нужно использовать аннотацию **@Signature**:
 ```java
-	private StringBuilder builder;
-	@Signature
-	public void __construct()
-	{
-		builder = new StringBuilder();
-	}
+private StringBuilder builder;
+@Signature
+public void __construct()
+{
+	builder = new StringBuilder();
+}
 ```
 Для примера, я объявил переменную класса builder и присваиваю ей значение в конструкторе.
 Передать аргументы в функцию просто:
 ```java
-	@Signature
-	public void append(String s)
-	{
-		builder.append(s);
-	}
+@Signature
+public void append(String s)
+{
+	builder.append(s);
+}
 ```
 А что если, нам нужно вернуть какое-то значение? В этом нам поможет класс **Memory** и унаследованные от него **LongMemory**, **StringMemory** и т.д:
 ```java
-	@Signature
-	public void append(String s)
-	{
-		builder.append(s);
-	}
-	@Signature
-	public Memory isEmpty()
-	{
-		return builder.length() == 0 ? Memory.TRUE : Memory.FALSE;
-	}
-	@Signature
-	public Memory length()
-	{
-		return LongMemory.valueOf(builder.length());
-	}
+@Signature
+public void append(String s)
+{
+	builder.append(s);
+}
+@Signature
+public Memory isEmpty()
+{
+	return builder.length() == 0 ? Memory.TRUE : Memory.FALSE;
+}
+@Signature
+public Memory length()
+{
+	return LongMemory.valueOf(builder.length());
+}
 ```
 Осталось зарегистировать класс. Для этого переходим в главый класс нашего расширения и в методе **onRegister** прописываем следующее:
 ```
 registerClass(scope, TestObject.class);
 ```
-Теперь наконец-то можно протестировать наше расширение. 
+Теперь наконец-то можно протестировать наше расширение! Для начал экспортируем наш проект в jar файл:
+```
+File->Export
+```
+
+Выбираем JAR file.
+![](/Chapter%201/4.jpg)
+
+И настраиваем экспорт в соответствии со скриншотом:
+![](/Chapter%201/5.jpg)
+
+Подключать библиотеку мы пока что будем через код. Сделать это можно таким образом:
+```php
+Runtime::addJar("path/to/lib.jar");
+```
+Если вы всё сделали правильно, то следующий код должен работать корректно:
+```php
+$object = new \test\TestObject;
+var_dump($object->isEmpty());
+$object->append("string ");
+var_dump($object->length());
+$object->append("another string");
+var_dump((string)$object);
+```
+Результат будет выглядит примерно так:
+```
+bool(true)
+int(7)
+string(21) "string another string"
+```
+## Заключение
+На этом всё. В следующией части, мы научимся работать с классом **BaseWrapper** и наконец соберём наше расширение в **dnbundle**. По вопросам - https://vk.com/dn_extension или https://vk.com/broelik.
