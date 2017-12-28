@@ -120,7 +120,7 @@ class Currency
     function __construct($currencyCode){}
     /**
      * @param Locale $locale
-     * return Currency
+     * @return Currency
      */
     static function of(Locale $locale){}
     function getSymbol(Locale $locale = null){}
