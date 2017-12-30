@@ -56,3 +56,6 @@ string(14) "Welcome, user!"
 string(3) "RUB"
 string(4) "руб."
 ```
+
+# Заключение
+По вопросам - https://vk.com/dn_extension или https://vk.com/broelik.
